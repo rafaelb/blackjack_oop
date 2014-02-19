@@ -1,8 +1,8 @@
 module User
   def points
     total_points = 0
-    cards.each {|x| total_points += x.points}
-    cards.select{|e| e.value == "A"}.count.times do
+    @cards.each {|x| total_points += x.points}
+    @cards.select{|e| e.value == "A"}.count.times do
       total_points -= 10 if total_points > 21
     end
     total_points
@@ -72,7 +72,7 @@ class Player
   attr_accessor :name, :cards
   def initialize(name, *cards)
     @name = name
-    @cards << cards
+    @cards = cards
   end
 
   def print
@@ -82,7 +82,7 @@ class Player
 
   def hit?
     puts "Press 1 if you want to hit or any other key if you want to stay"
-    answer = get.chomp
+    answer = gets.chomp
     answer == '1'
   end
 end
@@ -90,7 +90,7 @@ end
 class Dealer
   include User
   def initialize (*cards)
-    @cards << cards
+    @cards = cards
   end
 
   def print
@@ -109,24 +109,45 @@ class Game
 
   def run
     set_deck
+    @turns = 0
+    play
+    check_winner
   end
+
+  private
 
   def set_deck
     puts "How many decks of cards should be used?"
-    num = get.chomp
+    num = gets.chomp
     @deck = Deck.new(num.to_i)
     load_player
     load_dealer
   end
 
+  def play
+    result = 0
+    result = turn while result < 21
+  end
+
+  def check_winner
+    puts @player.points == 21 || @dealer.points > 21 ? "#{@player.name} has won!!!" : "Dealer has won!"
+  end
+
+  def turn
+    @turns += 1
+    @turns % 2 == 0 ? dealer_turn : player_turn
+  end
+
   def load_player
     puts "Enter player's name:"
-    name = get.chomp
+    name = gets.chomp
     @player = Player.new(name,@deck.deal,@deck.deal)
+    @player.print
   end
 
   def load_dealer
     @dealer = Dealer.new(@deck.deal, @deck.deal)
+    @dealer.print
   end
 
   def player_turn
@@ -142,3 +163,6 @@ class Game
   end
 
 end
+
+game = Game.new
+game.run
